@@ -3,7 +3,6 @@ import database.db as db
 from fpdf import FPDF
 
 from tabs.participants_tab import create_participants_tab
-from tabs.topics_tab import create_topics_tab
 from tabs.generate_pdf_tab import create_pdf_tab
 from tabs.files_tab import create_files_tab
 from tabs.admin_menu_tab import create_admin_menu_tab
@@ -20,13 +19,11 @@ tabview.pack(padx=10, pady=1)
 
 
 tabview.add("Participants")
-tabview.add("Topics")
 tabview.add("Generate PDF")
 tabview.add("Files")
 tabview.add("Admin Menu")
 
 create_participants_tab(tabview.tab("Participants"))
-create_topics_tab(tabview.tab("Topics"))
 create_pdf_tab(tabview.tab("Generate PDF"))
 create_files_tab(tabview.tab("Files"))
 create_admin_menu_tab(tabview.tab("Admin Menu"))

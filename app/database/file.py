@@ -65,11 +65,14 @@ def update_file(updated_file):
 
 
 # Зберігаємо в базу
-for i in range(10):
-    new_file = DBFile(
-        name=f"Report2025 {datetime.now()}",
-        path="/files/report_2025.pdf",
-        datetime=datetime.now(),
-        description="Фінансовий звіт за 2025 рік"
-    )
-    db_insert(new_file)
+def start_generate():
+    for i in range(10):
+        new_file = DBFile(
+            name=f"Report2025 #{i}",
+            path="/files/report_2025.pdf",
+            datetime=datetime.now(),
+            description="Фінансовий звіт за 2025 рік"
+        )
+        db_insert(new_file)
+
+start_generate()

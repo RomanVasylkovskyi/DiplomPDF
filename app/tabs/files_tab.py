@@ -2,27 +2,31 @@ import customtkinter as ctk
 from datetime import datetime
 from database.file import *
 
+
 def create_files_tab(tab_frame):
     search_frame = ctk.CTkFrame(tab_frame)
     search_frame.pack(pady=10, padx=10, fill="x")
 
-    search_entry = ctk.CTkEntry(search_frame, placeholder_text="Введіть назву файлу")
+    search_var = ctk.StringVar()
+
+    def on_search_var_change(*args):
+        query = search_var.get().lower()
+        all_files = get_all_files()
+        if query:
+            filtered_files = [f for f in all_files if query in f.name.lower()]
+            update_file_list(filtered_files)
+        else:
+            update_file_list(all_files)
+
+    search_var.trace_add("write", on_search_var_change)
+
+    search_entry = ctk.CTkEntry(search_frame, textvariable=search_var, placeholder_text="Введіть назву файлу")
     search_entry.pack(side="left", padx=(10, 5), expand=True, fill="x")
 
-    def on_search():
-        query = search_entry.get()
-        update_file_list(["test1.pdf", "test2.docx"] if query else [])
-
-    search_button = ctk.CTkButton(search_frame, text="Пошук", command=on_search)
-    search_button.pack(side="left", padx=5)
-
-    # Область з результатами
     results_frame = ctk.CTkScrollableFrame(tab_frame, width=850, height=550)
     results_frame.pack(padx=10, pady=(5, 10), fill="both", expand=True)
 
     file_rows = []
-
-    # fake_edit_time = datetime.now().strftime("%Y-%m-%d %H:%M")
 
     def update_file_list(file_list):
         for widget in file_rows:
@@ -47,12 +51,7 @@ def create_files_tab(tab_frame):
             download_button = ctk.CTkButton(row, text="Скачати", width=100, command=lambda f=file.name: download_file(f))
             download_button.pack(side="right", padx=5)
 
-            delete_button = ctk.CTkButton(row, text="Видалити", width=100, command=lambda f=file.name: delete_file(f))
-            delete_button.pack(side="right", padx=5)
-
             file_rows.append(row)
-
-
 
     def download_file(filename):
         print(f"Завантаження: {filename}")
@@ -60,6 +59,5 @@ def create_files_tab(tab_frame):
     def delete_file(filename):
         print(f"Видалення: {filename}")
 
-
-    # Початкове оновлення (якщо потрібно)
+    # Початкове завантаження всіх файлів
     update_file_list(get_all_files())
