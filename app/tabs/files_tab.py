@@ -59,5 +59,5 @@ def create_files_tab(tab_frame):
     def delete_file(filename):
         print(f"Видалення: {filename}")
 
-    # Початкове завантаження всіх файлів
+
     update_file_list(get_all_files())

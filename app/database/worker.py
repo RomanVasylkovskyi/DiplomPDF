@@ -18,14 +18,27 @@ class Worker(Base):
     salary = Column(Numeric(10, 2))
 
     def __init__(self, name, surname, patronymic, age, gender, position, salary):
-        super().__init__(name=name, surname=surname, patronymic=patronymic,
-                         age=age, gender=gender)
+        self.name = name
+        self.surname = surname
+        self.patronymic = patronymic
+        self.age = age
+        self.gender = gender
         self.position = position
         self.salary = salary
 
     def __str__(self):
-        return f"{self.name} {self.surname}, position: {self.position}, salary: {self.salary}"
+        return f"{self.surname} {self.name} — {self.position}"
 
+
+def get_all_worker():
+    session = get_session()
+    try:
+        return session.query(Worker).all()
+    except SQLAlchemyError as e:
+        print(f"❌ Error fetching all files: {e}")
+        return []
+    finally:
+        session.close()
 
 def get_worker(id):
     session = get_session()
@@ -63,4 +76,38 @@ def update_worker(updated_worker):
     finally:
         session.close()
 
+def generate_fake_worker():
+    from faker import Faker
+    import random
 
+    fake = Faker('uk_UA')
+
+    roles = [
+        "Доцент", "Професор", "Асистент", "Старший викладач",
+        "Інженер-програміст", "Завідувач кафедри", "Методист",
+        "Лаборант", "Куратор", "Секретар кафедри"
+    ]
+
+    gender_str = random.choice(['male', 'female'])
+    name = fake.first_name_male() if gender_str == 'male' else fake.first_name_female()
+    surname = fake.last_name_male() if gender_str == 'male' else fake.last_name_female()
+    patronymic = name + ('ович' if gender_str == 'male' else 'івна')
+    age = random.randint(25, 65)
+    position = random.choice(roles)
+    salary = round(random.uniform(10000, 40000), 2)
+
+    gender_enum = Gender.MALE if gender_str == 'male' else Gender.FEMALE
+
+    return Worker(
+        name=name,
+        surname=surname,
+        patronymic=patronymic,
+        age=age,
+        gender=gender_enum,
+        position=position,
+        salary=salary
+    )
+
+
+# for i in range(20):
+#     db_insert(generate_fake_worker())

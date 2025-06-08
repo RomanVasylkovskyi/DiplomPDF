@@ -64,7 +64,6 @@ def update_file(updated_file):
         session.close()
 
 
-# Зберігаємо в базу
 def start_generate():
     for i in range(10):
         new_file = DBFile(
@@ -75,4 +74,4 @@ def start_generate():
         )
         db_insert(new_file)
 
-start_generate()
+# start_generate()

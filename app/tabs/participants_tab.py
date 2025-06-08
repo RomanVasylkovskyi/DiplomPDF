@@ -1,18 +1,27 @@
 import customtkinter as ctk
+from database.worker import get_all_worker
+
 
 def create_participants_tab(tab_frame):
-    users = ["Іван Петренко", "Олена Сидорова", "Максим Іванов", "Наталія Коваль",
-             "Олег Бондар", "Світлана Павленко", "Андрій Мельник", "Юлія Кравець"]
+    users = get_all_worker()
+    user_map = {f"{u.surname} {u.name} — {u.position}": u for u in users}
+    user_names = list(user_map.keys())
 
     added_users = []
 
-    def on_user_selected(user):
+    def on_user_selected(user_str):
+        user = user_map[user_str]
         if user not in added_users:
             added_users.append(user)
             refresh_added_users()
 
-    selected_user = ctk.StringVar(value=users[0])
-    user_option_menu = ctk.CTkOptionMenu(tab_frame, variable=selected_user, values=users, command=on_user_selected)
+    selected_user = ctk.StringVar(value=user_names[0])
+    user_option_menu = ctk.CTkOptionMenu(
+        tab_frame,
+        variable=selected_user,
+        values=user_names,
+        command=on_user_selected
+    )
     user_option_menu.pack(pady=5, padx=10, anchor="w")
 
     scrollable_users_frame = ctk.CTkScrollableFrame(tab_frame, height=150)
@@ -23,16 +32,29 @@ def create_participants_tab(tab_frame):
             widget.destroy()
 
         for user in added_users:
-            row = ctk.CTkFrame(scrollable_users_frame)
-            row.pack(fill="x", pady=2, padx=5)
+            row = ctk.CTkFrame(
+                scrollable_users_frame,
+                border_width=1,
+                border_color="#666666",
+                corner_radius=6,
+                fg_color="transparent"
+            )
+            row.pack(fill="x", pady=5, padx=5)
 
-            label = ctk.CTkLabel(row, text=user, anchor="w")
+            content = ctk.CTkFrame(row, fg_color="transparent")
+            content.pack(fill="x", padx=10, pady=5)
+
+            label = ctk.CTkLabel(
+                content,
+                text=f"{user.surname} {user.name} — {user.position}",
+                anchor="w"
+            )
             label.pack(side="left", padx=(5, 10), expand=True)
 
             def make_remove_callback(u=user):
                 return lambda: remove_user(u)
 
-            remove_button = ctk.CTkButton(row, text="Видалити", width=80, command=make_remove_callback())
+            remove_button = ctk.CTkButton(content, text="Видалити", width=80, command=make_remove_callback())
             remove_button.pack(side="right", padx=5)
 
     def remove_user(user):
@@ -40,30 +62,34 @@ def create_participants_tab(tab_frame):
             added_users.remove(user)
             refresh_added_users()
 
-    # Роздільник
     separator = ctk.CTkLabel(tab_frame, text="─" * 60)
     separator.pack(pady=10)
 
-    # Кнопка додавання теми обговорення
     add_topic_button = ctk.CTkButton(tab_frame, text="Додати тему обговорення", command=lambda: add_topic_fields())
     add_topic_button.pack(pady=(5, 10))
 
-    # Список тем
     topics_frame = ctk.CTkScrollableFrame(tab_frame, height=250)
     topics_frame.pack(padx=10, pady=(0, 10), fill="both", expand=True)
 
     def add_topic_fields():
-        row = ctk.CTkFrame(topics_frame)
-        row.pack(fill="x", pady=5, padx=5)
+        wrapper = ctk.CTkFrame(
+            topics_frame,
+            border_width=1,
+            border_color="#666666",
+            corner_radius=6,
+            fg_color="transparent"
+        )
+        wrapper.pack(fill="x", pady=5, padx=5)
 
-        topic_entry = ctk.CTkEntry(row, placeholder_text="Тема обговорення")
-        topic_entry.pack(side="left", padx=5, expand=True, fill="x")
+        inner = ctk.CTkFrame(wrapper, fg_color="transparent")
+        inner.pack(fill="x", padx=10, pady=10)
 
-        result_entry = ctk.CTkEntry(row, placeholder_text="Результати")
-        result_entry.pack(side="left", padx=5, expand=True, fill="x")
+        topic_entry = ctk.CTkEntry(inner, placeholder_text="Тема обговорення")
+        topic_entry.pack(fill="x", padx=5, pady=(0, 5))
 
-        def remove_row():
-            row.destroy()
+        result_textbox = ctk.CTkTextbox(inner, height=120)
+        result_textbox.insert("0.0", "Результати")
+        result_textbox.pack(fill="x", padx=5, pady=(0, 5))
 
-        remove_button = ctk.CTkButton(row, text="Видалити", width=80, command=remove_row)
-        remove_button.pack(side="right", padx=5)
+        remove_button = ctk.CTkButton(inner, text="Видалити", width=80, command=lambda: wrapper.destroy())
+        remove_button.pack(pady=(5, 0))
