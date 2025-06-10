@@ -1,6 +1,7 @@
 import customtkinter as ctk
 from datetime import datetime
-from database.file import *
+import requests
+from backend import get_all_files_request
 
 def create_admin_menu_tab(tab_frame):
     search_frame = ctk.CTkFrame(tab_frame)
@@ -10,7 +11,7 @@ def create_admin_menu_tab(tab_frame):
 
     def on_search_var_change(*args):
         query = search_var.get().lower()
-        all_files = get_all_files()
+        all_files = get_all_files_request()
         if query:
             filtered_files = [f for f in all_files if query in f.name.lower()]
             update_file_list(filtered_files)
@@ -80,11 +81,11 @@ def create_admin_menu_tab(tab_frame):
             if password == "1111":
                 delete_file(filename)
                 password_window.destroy()
-                update_file_list(get_all_files())
+                update_file_list(get_all_files_request())
             else:
                 error_label.configure(text="❌ Невірний пароль")
 
         confirm_button = ctk.CTkButton(password_window, text="Підтвердити", command=confirm)
         confirm_button.pack(pady=0)
 
-    update_file_list(get_all_files())
+    update_file_list(get_all_files_request())

@@ -1,5 +1,6 @@
 from database.utiles import *
 from sqlalchemy import DateTime
+from sqlalchemy import select
 from datetime import datetime
 
 class DBFile(Base):
@@ -19,15 +20,17 @@ class DBFile(Base):
     def __str__(self):
         return f"{self.name} {self.name},  {self.datetime},  {self.description[:20]}"
 
+
 def get_all_files():
     session = get_session()
-    try:
-        return session.query(DBFile).all()
-    except SQLAlchemyError as e:
-        print(f"❌ Error fetching all files: {e}")
-        return []
-    finally:
-        session.close()
+    # try:
+    result = session.execute(select(DBFile)).scalars().all()
+    session.close()
+    return result
+    # except SQLAlchemyError as e:
+    #     print(f"❌ Error fetching all files: {e}")
+    #     return []
+    # finally:
 
 
 def get_file(id):
@@ -64,7 +67,7 @@ def update_file(updated_file):
         session.close()
 
 
-def start_generate():
+def start_generate_fake_files():
     for i in range(10):
         new_file = DBFile(
             name=f"Report2025 #{i}",
@@ -73,5 +76,3 @@ def start_generate():
             description="Фінансовий звіт за 2025 рік"
         )
         db_insert(new_file)
-
-# start_generate()

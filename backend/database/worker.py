@@ -1,5 +1,6 @@
 from database.utiles import *
 from enum import Enum as PyEnum
+from sqlalchemy import select
 
 class Gender(PyEnum):
     MALE = 'male'
@@ -29,13 +30,12 @@ class Worker(Base):
     def __str__(self):
         return f"{self.surname} {self.name} — {self.position}"
 
-
-def get_all_worker():
+def get_all_workers():
     session = get_session()
     try:
-        return session.query(Worker).all()
+        return session.execute(select(Worker)).scalars().all()
     except SQLAlchemyError as e:
-        print(f"❌ Error fetching all files: {e}")
+        print(f"❌ Error fetching workers: {e}")
         return []
     finally:
         session.close()
@@ -107,7 +107,3 @@ def generate_fake_worker():
         position=position,
         salary=salary
     )
-
-
-# for i in range(20):
-#     db_insert(generate_fake_worker())

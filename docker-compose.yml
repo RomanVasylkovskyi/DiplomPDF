@@ -1,4 +1,17 @@
 services:
+  backend:
+    build:
+      context: ./backend
+    container_name: DiplomBackend
+    ports:
+      - "8000:8000"
+    depends_on:
+      - db
+    env_file:
+      - .env
+    volumes:
+      - ./backend:/app
+  
   db:
     image: postgres:16
     container_name: DiplomDB
