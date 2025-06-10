@@ -3,6 +3,8 @@ from tkcalendar import DateEntry
 import datetime
 import tkinter as tk
 from backend import PDFRequest, Participant, Question, send_pdf_request, get_all_worker_request
+from tabs.message_popup import show_popup
+from tabs.menu_utils import is_valid_filename
 
 def create_participants_tab(tab_frame):
     ### Doc name part ###
@@ -127,7 +129,6 @@ def create_participants_tab(tab_frame):
         # Знищуємо вікно з інтерфейсу
         wrapper.destroy()
 
-
     generate_button = ctk.CTkButton(tab_frame, text="Згенерувати PDF", command=lambda: generate_pdf_callback())
     generate_button.pack(pady=(15, 10))
 
@@ -143,9 +144,25 @@ def create_participants_tab(tab_frame):
             topic_result = topic[2].get("0.0", "end").strip()
             topic_data.append(Question(question=topic_name, decision=topic_result))
 
-        print(f"Генеруємо PDF з назвою: {filename_text}")
-        print(f"users: {participant_data}")
-        print(f"topics: {topic_data}")
+        # print(f"Генеруємо PDF з назвою: {filename_text}")
+        # print(f"users: {participant_data}")
+        # print(f"topics: {topic_data}")
+
+        if not is_valid_filename(filename_text):
+            show_popup(f"Неправильне ім'я файлу!", title="Попередження", color="yellow")
+            return
+
+        if len(participant_data) < 2:
+            show_popup(f"Мінімальна к-ть учасників має бути більше 1!", title="Попередження", color="yellow")
+            return
+
+        if len(topic_data) < 1:
+            show_popup(f"Мінімальна к-ть обговорень має бути більше 0!", title="Попередження", color="yellow")
+            return
+        for topic in topic_data:
+            if (topic.question.strip() == "") or (topic.decision.strip() == ""):
+                show_popup(f"Одне з обговорень має пусті рядки!", title="Попередження", color="yellow")
+                return
 
         request_data = PDFRequest(
             filename=filename_text,
@@ -154,3 +171,4 @@ def create_participants_tab(tab_frame):
             questions=topic_data
         )
         send_pdf_request(request_data)
+        show_popup(f'Файл "{filename_text}.pdf" успішно згенеровано!', color="#90EE90")

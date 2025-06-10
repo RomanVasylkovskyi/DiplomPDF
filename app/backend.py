@@ -1,4 +1,3 @@
-BACKEND_URL = "http://127.0.0.1:8000"
 from pydantic import BaseModel
 from typing import List, Optional
 from datetime import datetime
@@ -6,6 +5,7 @@ import requests
 
 from decimal import Decimal
 from enum import Enum
+import config
 
 class DBFileSchema(BaseModel):
     id: int
@@ -48,7 +48,7 @@ class PDFRequest(BaseModel):
     datetime: datetime
 
 def get_all_files_request():
-    response = requests.get(f"{BACKEND_URL}/get_all_files")
+    response = requests.get(f"{config.BACKEND_URL}/get_all_files")
 
     if response.status_code == 200:
         raw_data = response.json()
@@ -60,7 +60,7 @@ def get_all_files_request():
     return []
 
 def get_all_worker_request():
-    response = requests.get(f"{BACKEND_URL}/get_all_workers")
+    response = requests.get(f"{config.BACKEND_URL}/get_all_workers")
 
     if response.status_code == 200:
         raw_data = response.json()
@@ -73,15 +73,53 @@ def get_all_worker_request():
 
 def send_pdf_request(request_data: PDFRequest):
     response = requests.post(
-        f"{BACKEND_URL}/generate_pdf/",
-        json=request_data.model_dump(mode="json")  # ✅
+        f"{config.BACKEND_URL}/generate_pdf/",
+        json=request_data.model_dump(mode="json")
     )
 
+def download_pdf(filename, path):
+    url = f"{config.BACKEND_URL}/{path}"
+    response = requests.get(
+        url,
+    )
+    
+    from tkinter import filedialog
+    save_path = filedialog.asksaveasfilename(
+        defaultextension=".pdf",
+        filetypes=[("PDF files", "*.pdf")],
+        initialfile=f"{filename}.pdf",
+        title="Save PDF as..."
+    )
+    print("save_path", save_path, response.status_code)
+    print("url", url)
+
+    if not save_path:
+        print("❌ Save cancelled.")
+        return False, ""
+
+    response = requests.get(url)
 
     if response.status_code == 200:
-        pdf_filename = f"{request_data.filename}.pdf"
-        with open(pdf_filename, "wb") as f:
+        with open(save_path, "wb") as f:
             f.write(response.content)
-        print(f"✅ PDF saved as {pdf_filename}")
+        print(f"✅ PDF saved as '{save_path}'")
+        return True, save_path
     else:
         print("❌ Error:", response.status_code, response.text)
+        return False, ""
+
+def delete_pdf(file_id, admin_password):
+    url = f"{config.BACKEND_URL}/admin/delete_file/{file_id}"
+    
+    headers = {
+        "x-admin-password": admin_password
+    }
+
+    response = requests.delete(url, headers=headers)
+
+    if response.status_code == 200:
+        print(f"✅ File with ID {file_id} deleted successfully")
+        return True
+    else:
+        print(f"❌ Error {response.status_code}: {response.text}")
+        return False

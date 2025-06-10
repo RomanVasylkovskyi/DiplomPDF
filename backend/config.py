@@ -16,3 +16,4 @@ class Settings:
 
 settings = Settings()
 print(settings.database_url)
+ADMIN_PASSWORD = os.getenv("ADMIN_PASSWORD")

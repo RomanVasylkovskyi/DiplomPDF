@@ -1,5 +1,9 @@
 from fpdf import FPDF
+
 import os
+import hashlib
+import uuid
+
 
 def generate_pdf(filename, participants, questions):
     pdf = FPDF()
@@ -32,8 +36,12 @@ def generate_pdf(filename, participants, questions):
         if question and decision:
             pdf.multi_cell(0, 10, f"Question: {question}\nDecision: {decision}\n", border=1)
 
+    hash_object = hashlib.sha256(str(uuid.uuid4()).encode())
+    hashed_filename = hash_object.hexdigest()
+
+    path = f"files/{hashed_filename}.pdf"
+
     os.makedirs("files", exist_ok=True)
-    path = f"files/{filename}.pdf"
     pdf.output(path)
-    print(f"✅ PDF saved as '{path}'")
+
     return path

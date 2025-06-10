@@ -1,7 +1,10 @@
 from database.utiles import *
-from sqlalchemy import DateTime
-from sqlalchemy import select
+from sqlalchemy import DateTime, select
 from datetime import datetime
+from fastapi import HTTPException
+from sqlalchemy.exc import SQLAlchemyError
+
+import os
 
 class DBFile(Base):
     __tablename__ = 'dbfile'
@@ -23,15 +26,13 @@ class DBFile(Base):
 
 def get_all_files():
     session = get_session()
-    # try:
-    result = session.execute(select(DBFile)).scalars().all()
-    session.close()
-    return result
-    # except SQLAlchemyError as e:
-    #     print(f"❌ Error fetching all files: {e}")
-    #     return []
-    # finally:
-
+    try:
+        result = session.execute(select(DBFile)).scalars().all()
+        session.close()
+        return result
+    except SQLAlchemyError as e:
+        print(f"❌ Error fetching all files: {e}")
+        return []
 
 def get_file(id):
     session = get_session()
@@ -43,35 +44,40 @@ def get_file(id):
     finally:
         session.close()
 
-
-def update_file(updated_file):
+def delete_file(file_id):
     session = get_session()
     try:
-        file = get_file(updated_file.id)
-        if file:
-            file.name = updated_file.name
-            file.path = updated_file.path
-            file.datetime = updated_file.datetime
-            file.description = updated_file.description
+        file_obj = session.query(DBFile).filter_by(id=file_id).first()
+        if not file_obj:
+            raise HTTPException(status_code=404, detail="Файл не знайдено в базі даних")
 
-            session.add(file)
-            session.commit()
-            return True
+        # Спроба видалити файл із файлової системи
+        if os.path.exists(file_obj.path):
+            try:
+                os.remove(file_obj.path)
+            except Exception as e:
+                raise HTTPException(status_code=500, detail=f"Не вдалося видалити файл з диска: {e}")
         else:
-            return False
-    except SQLAlchemyError as e:
+            print(f"⚠️ Файл {file_obj.path} не існує на диску — буде видалено лише з бази")
+
+        # Видалення з бази даних
+        session.delete(file_obj)
+        session.commit()
+
+        return True
+    except SQLAlchemyError as db_err:
         session.rollback()
-        print(f"❌ Error updating file: {e}")
+        print(f"❌ DB error while deleting file ID {file_id}: {db_err}")
+        raise HTTPException(status_code=500, detail="Помилка бази даних під час видалення файлу")
         return False
     finally:
         session.close()
-
 
 def start_generate_fake_files():
     for i in range(10):
         new_file = DBFile(
             name=f"Report2025 #{i}",
-            path="/files/report_2025.pdf",
+            path="files/report_2025.pdf",
             datetime=datetime.now(),
             description="Фінансовий звіт за 2025 рік"
         )
