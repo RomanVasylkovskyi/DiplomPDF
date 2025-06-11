@@ -25,7 +25,7 @@ app.mount("/files", StaticFiles(directory="files"), name="files")
 @app.get("/get_all_files", response_model=List[DBFileSchema])
 def get_all_files_view():
     print("/get_all_files:\n", get_all_files())
-    return get_all_files()
+    return get_all_files()[::-1]
 
 @app.get("/get_all_workers", response_model=List[WorkerSchema])
 def get_workers_view():
