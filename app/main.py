@@ -11,20 +11,18 @@ ctk.set_default_color_theme("blue")
 
 app = ctk.CTk()
 app.geometry("900x900")
-app.title("Discussion Protocol")
+app.title("Генератор протоколів засідань")
 
 tabview = ctk.CTkTabview(app, width=880, height=660)
 tabview.pack(padx=10, pady=1)
 
+tabview.add("Генерація PDF")
+tabview.add("Файли")
+tabview.add("Адмін меню")
 
-tabview.add("Participants")
-tabview.add("Files")
-tabview.add("Admin Menu")
-
-
-create_participants_tab(tabview.tab("Participants"))
-files_tab_update_file_list_func = create_files_tab(tabview.tab("Files"))
-admin_tab_update_file_list_func = create_admin_menu_tab(tabview.tab("Admin Menu"))
+create_participants_tab(tabview.tab("Генерація PDF"))
+files_tab_update_file_list_func = create_files_tab(tabview.tab("Файли"))
+admin_tab_update_file_list_func = create_admin_menu_tab(tabview.tab("Адмін меню"))
 
 current_tab_name = None  # глобальна змінна для збереження попередньої активної вкладки
 
@@ -35,11 +33,11 @@ def handle_tab_change():
         current_tab_name = selected_tab
         print(f"🔄 Tab changed to: {selected_tab}")
         
-        if selected_tab == "Files":
+        if selected_tab == "Файли":
             on_files_tab_open()
-        elif selected_tab == "Participants":
+        elif selected_tab == "Генерація PDF":
             on_participants_tab_open()
-        elif selected_tab == "Admin Menu":
+        elif selected_tab == "Адмін меню":
             on_admin_menu_tab_open()
 
     tabview.after(50, handle_tab_change)

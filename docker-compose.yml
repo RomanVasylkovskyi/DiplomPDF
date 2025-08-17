@@ -1,5 +1,6 @@
 services:
   backend:
+    restart: always
     build:
       context: ./backend
     container_name: DiplomBackend
@@ -11,7 +12,6 @@ services:
       - ./backend/.env
     volumes:
       - ./backend:/app
-  
   db:
     image: postgres:16
     container_name: DiplomDB

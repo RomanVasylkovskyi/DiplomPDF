@@ -1,6 +1,8 @@
 from database.utiles import *
 from enum import Enum as PyEnum
 from sqlalchemy import select
+from sqlalchemy import ForeignKey
+from sqlalchemy.orm import relationship
 
 class Gender(PyEnum):
     MALE = 'male'
@@ -17,6 +19,8 @@ class Worker(Base):
     gender = Column(Enum(Gender), default=Gender.OTHER)
     position = Column(String(100), nullable=False)
     salary = Column(Numeric(10, 2))
+
+    files = relationship("DBFile", back_populates="creator", cascade="all, delete-orphan")
 
     def __init__(self, name, surname, patronymic, age, gender, position, salary):
         self.name = name
